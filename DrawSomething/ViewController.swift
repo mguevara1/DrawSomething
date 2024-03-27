@@ -7,50 +7,36 @@
 
 import UIKit
 
-class Canvas: UIView {
-    
-    override func draw(_ rect: CGRect) {
-        super.draw(rect)
-        
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-        
-        context.setStrokeColor(UIColor.red.cgColor)
-        context.setLineWidth(10)
-        context.setLineCap(.butt)
-        
-        lines.forEach { line in
-            for (i,p) in line.enumerated() {
-                if i == 0 {
-                    context.move(to: p)
-                } else {
-                    context.addLine(to: p)
-                }
-            }
-        }
-        
-        context.strokePath()
-    }
-    
-    var lines = [[CGPoint]]()
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        lines.append([CGPoint]())
-    }
-    
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        guard let point = touches.first?.location(in: nil) else { return }
-        
-        guard var lastLine = lines.popLast() else { return }
-        lastLine.append(point)
-        lines.append(lastLine)
-        
-        setNeedsDisplay()
-    }
-}
-
 class ViewController: UIViewController {
 
     let canvas = Canvas()
+    
+    let undoButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Undo", for: .normal)
+        button.titleLabel?.font = .boldSystemFont(ofSize: 14)
+        return button
+    }()
+    
+    let clearButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Clear", for: .normal)
+        button.titleLabel?.font = .boldSystemFont(ofSize: 14)
+        return button
+    }()
+    
+    fileprivate func setupLayout() {
+        let stackView = UIStackView(arrangedSubviews: [undoButton, clearButton])
+        stackView.distribution = .fillEqually
+        
+        view.addSubview(stackView)
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        
+        stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25).isActive = true
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,8 +44,19 @@ class ViewController: UIViewController {
         view.addSubview(canvas)
         canvas.backgroundColor = .white
         canvas.frame = view.frame
+        
+        undoButton.addTarget(self, action: #selector(handleUndo), for: .touchUpInside)
+        clearButton.addTarget(self, action: #selector(handleClear), for: .touchUpInside)
+        
+        setupLayout()
     }
 
-
+    @objc fileprivate func handleUndo() {
+        canvas.undo()
+    }
+    
+    @objc fileprivate func handleClear() {
+        canvas.clear()
+    }
 }
 
