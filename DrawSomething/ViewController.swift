@@ -25,17 +25,54 @@ class ViewController: UIViewController {
         return button
     }()
     
+    let blackButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .black
+        button.layer.borderWidth = 1
+        return button
+    }()
+    
+    let yellowButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .yellow
+        button.layer.borderWidth = 1
+        return button
+    }()
+    
+    let redButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .red
+        button.layer.borderWidth = 1
+        return button
+    }()
+    
+    let blueButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.backgroundColor = .blue
+        button.layer.borderWidth = 1
+        return button
+    }()
+    
+    let slider: UISlider = {
+        let slider = UISlider()
+        slider.minimumValue = 1
+        slider.maximumValue = 10
+        return slider
+    }()
+    
     fileprivate func setupLayout() {
-        let stackView = UIStackView(arrangedSubviews: [undoButton, clearButton])
+        let colorStackView = UIStackView(arrangedSubviews: [blackButton, yellowButton, redButton, blueButton])
+        colorStackView.distribution = .fillEqually
+        
+        let stackView = UIStackView(arrangedSubviews: [undoButton, colorStackView, slider, clearButton])
+        stackView.spacing = 8
         stackView.distribution = .fillEqually
         
         view.addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-        stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25.0).isActive = true
         stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-        
-        stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25).isActive = true
     }
     
     override func viewDidLoad() {
@@ -48,6 +85,16 @@ class ViewController: UIViewController {
         undoButton.addTarget(self, action: #selector(handleUndo), for: .touchUpInside)
         clearButton.addTarget(self, action: #selector(handleClear), for: .touchUpInside)
         
+        blackButton.addTarget(self, action: #selector(handleColorChange), for: .touchUpInside)
+        yellowButton.addTarget(self, action: #selector(handleColorChange), for: .touchUpInside)
+        blueButton.addTarget(self, action: #selector(handleColorChange), for: .touchUpInside)
+        redButton.addTarget(self, action: #selector(handleColorChange), for: .touchUpInside)
+        
+        slider.addTarget(self, action: #selector(handleSliderChange), for: .touchUpInside)
+        slider.setValue(Float(canvas.getStrokeWidth()), animated: false)
+        slider.tintColor = .black
+        slider.thumbTintColor = .black
+        
         setupLayout()
     }
 
@@ -57,6 +104,16 @@ class ViewController: UIViewController {
     
     @objc fileprivate func handleClear() {
         canvas.clear()
+    }
+    
+    @objc fileprivate func handleColorChange(button: UIButton) {
+        canvas.setStrokeColor(color: button.backgroundColor ?? .black)
+        slider.tintColor = button.backgroundColor ?? .black
+        slider.thumbTintColor = button.backgroundColor ?? .black
+    }
+    
+    @objc fileprivate func handleSliderChange() {
+        canvas.setStrokeWidth(strokeWidth: CGFloat(slider.value))
     }
 }
 
